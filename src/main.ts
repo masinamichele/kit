@@ -1,7 +1,7 @@
 import process from 'node:process';
 import { join } from 'node:path';
 import { readdir } from 'node:fs/promises';
-import { ArgumentParser } from './utils.js';
+import { ArgumentParser } from './helpers/arguments.js';
 
 const argv = process.argv.slice(2);
 const command = argv.shift();

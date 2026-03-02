@@ -1,9 +1,11 @@
 import { resolve } from 'node:path';
-import { Arguments, findKitRoot, writeKitObject } from '../utils.js';
 import { readFile } from 'node:fs/promises';
 import { sep } from 'node:path/posix';
 import { Buffer } from 'node:buffer';
 import { Readable } from 'node:stream';
+import { KitObject } from '../helpers/kitobject.js';
+import { KitRoot } from '../helpers/kitroot.js';
+import { Arguments } from '../helpers/arguments.js';
 
 type Tree = { [key: string]: Tree | string };
 
@@ -50,11 +52,11 @@ const writeTree = async (tree: Tree) => {
     }),
   );
 
-  return writeKitObject(Readable.from(treeContent), 'tree');
+  return KitObject.write(Readable.from(treeContent), 'tree');
 };
 
 const command = async () => {
-  const indexFile = resolve(await findKitRoot(), '.kit/index');
+  const indexFile = resolve(await KitRoot.find(), '.kit/index');
   const index = await readFile(indexFile, 'utf8');
   const content = index
     .split('\n')

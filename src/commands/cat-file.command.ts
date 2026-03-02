@@ -1,5 +1,6 @@
-import { Arguments, readKitObject } from '../utils.js';
 import assert from 'node:assert/strict';
+import { Arguments } from '../helpers/arguments.js';
+import { KitObject } from '../helpers/kitobject.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
   assert.ok(args.$1);
@@ -7,7 +8,7 @@ export const validateArguments = (args: Arguments): Parameters<typeof command> =
 };
 
 const command = async (sha: string) => {
-  const decompressedData = await readKitObject(sha);
+  const decompressedData = await KitObject.read(sha);
   const nullByteIndex = decompressedData.indexOf('\0');
   return decompressedData.subarray(nullByteIndex + 1).toString();
 };

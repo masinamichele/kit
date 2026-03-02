@@ -1,7 +1,8 @@
 import { createReadStream } from 'node:fs';
 import { resolve } from 'node:path';
-import { Arguments, writeKitObject } from '../utils.js';
 import assert from 'node:assert/strict';
+import { Arguments } from '../helpers/arguments.js';
+import { KitObject } from '../helpers/kitobject.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
   assert.ok(args.$1);
@@ -10,7 +11,7 @@ export const validateArguments = (args: Arguments): Parameters<typeof command> =
 
 const command = async (filePath: string, write: boolean) => {
   const source = createReadStream(filePath);
-  return writeKitObject(source, 'blob', write);
+  return KitObject.write(source, 'blob', write);
 };
 
 export default command;

@@ -1,13 +1,14 @@
 import { resolve } from 'node:path';
-import { Arguments, findKitRoot } from '../utils.js';
 import { readFile } from 'node:fs/promises';
+import { Arguments } from '../helpers/arguments.js';
+import { KitRoot } from '../helpers/kitroot.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
   return [];
 };
 
 const command = async () => {
-  const indexFile = resolve(await findKitRoot(), '.kit/index');
+  const indexFile = resolve(await KitRoot.find(), '.kit/index');
   const index = await readFile(indexFile, 'utf8');
   const indexMap: Record<string, string> = Object.fromEntries(
     index

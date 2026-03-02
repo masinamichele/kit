@@ -1,6 +1,6 @@
 import { resolve, join } from 'node:path';
 import { mkdir, writeFile, stat } from 'node:fs/promises';
-import { Arguments } from '../utils.js';
+import { Arguments } from '../classes/arguments.js';
 import assert from 'node:assert/strict';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {

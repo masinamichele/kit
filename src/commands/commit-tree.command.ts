@@ -1,7 +1,10 @@
-import { Arguments, Timestamp, writeKitObject } from '../utils.js';
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { Readable } from 'node:stream';
+import { Arguments } from '../helpers/arguments.js';
+import { Timestamp } from '../helpers/timestamp.js';
+import { KitConfig } from '../helpers/kitconfig.js';
+import { KitObject } from '../helpers/kitobject.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
   assert.ok(args.$1);
@@ -12,12 +15,13 @@ export const validateArguments = (args: Arguments): Parameters<typeof command> =
 const command = async (sha: string, message: string, parent?: string) => {
   const timestamp = Timestamp.now();
   const timezone = Timestamp.getTimezoneOffset();
+  const config = await KitConfig.read();
   let content = `tree ${sha}`;
   if (parent) content += `\nparent ${parent}`;
-  content += `\nauthor NAME <EMAIL> ${timestamp} ${timezone}`;
-  content += `\ncommitter NAME <EMAIL> ${timestamp} ${timezone}`;
+  content += `\nauthor ${config.user.name} <${config.user.email}> ${timestamp} ${timezone}`;
+  content += `\ncommitter ${config.user.name} <${config.user.email}> ${timestamp} ${timezone}`;
   content += `\n\n${message}`;
-  return writeKitObject(Readable.from(Buffer.from(content)), 'commit');
+  return KitObject.write(Readable.from(Buffer.from(content)), 'commit');
 };
 
 export default command;
