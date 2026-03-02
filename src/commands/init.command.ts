@@ -1,7 +1,7 @@
 import { resolve, join } from 'node:path';
 import { mkdir, writeFile, stat } from 'node:fs/promises';
-import { Arguments } from '../classes/arguments.js';
 import assert from 'node:assert/strict';
+import { Arguments } from '../helpers/arguments.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
   assert.ok(args.$1);

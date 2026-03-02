@@ -1,5 +1,5 @@
 import { Arguments } from '../helpers/arguments.js';
-import { History } from '../helpers/history.js';
+import { Refs } from '../helpers/refs.js';
 import { KitObject } from '../helpers/kitobject.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
@@ -7,7 +7,7 @@ export const validateArguments = (args: Arguments): Parameters<typeof command> =
 };
 
 const command = async () => {
-  let sha = await History.getLatestCommit();
+  let sha = await Refs.getHead();
   while (sha) {
     const rawCommitContents = await KitObject.read(sha);
     const commitContents = rawCommitContents.toString('utf8');

@@ -2,18 +2,28 @@ import { readdir, stat } from 'node:fs/promises';
 import { resolve, relative as pathRelative, dirname, sep, posix } from 'node:path';
 import process from 'node:process';
 
+let root: string;
+
 export namespace KitRoot {
   export const find = async (start = process.cwd()): Promise<string> => {
+    if (root) return root;
+
     const stats = await stat(start);
+
     if (!stats.isDirectory()) start = dirname(start);
+
     const dirs = await readdir(start, { withFileTypes: true });
+
     if (dirs.some((dir) => dir.isDirectory() && dir.name === '.kit')) {
+      root = start;
       return resolve(start);
     }
+
     const newStart = resolve(start, '..');
     if (newStart === start) {
       throw new Error('No .kit repository found');
     }
+
     return find(newStart);
   };
 

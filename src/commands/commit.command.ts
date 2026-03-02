@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { Arguments } from '../helpers/arguments.js';
 import writeTree from './write-tree.command.js';
-import { History } from '../helpers/history.js';
+import { Refs } from '../helpers/refs.js';
 import commitTree from './commit-tree.command.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
@@ -11,9 +11,9 @@ export const validateArguments = (args: Arguments): Parameters<typeof command> =
 
 const command = async (message: string) => {
   const treeSha = await writeTree();
-  const parentSha = await History.getLatestCommit();
+  const parentSha = await Refs.getHead();
   const commitSha = await commitTree(treeSha, message, parentSha);
-  await History.setLatestCommit(commitSha);
+  await Refs.setHead(commitSha);
 };
 
 export default command;
