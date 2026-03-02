@@ -20,10 +20,11 @@
   - [x] **`commit-tree`**: Create a new commit object.
 
 ## Phase 4: Porcelain Commands
-- [ ] **User-Friendly Workflow**: Create higher-level commands that mimic the common Git workflow.
-  - [ ] **`add`**: A user-friendly interface for `update-index`.
-  - [ ] **`commit`**: Automate the process of creating trees and commits.
-  - [ ] **`log`**: Show the commit history.
+- [x] **User-Friendly Workflow**: Create higher-level commands that mimic the common Git workflow.
+  - [x] **`add`**: A user-friendly interface for `update-index`.
+  - [x] **`commit`**: Automate the process of creating trees and commits.
+  - [x] **`log`**: Show the commit history.
+    - [ ] Add branch and HEAD decorations.
 
 ## Phase 5: Branching and Merging
 - [ ] **Branching**: Manage different lines of development.

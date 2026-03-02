@@ -12,7 +12,7 @@ export const validateArguments = (args: Arguments): Parameters<typeof command> =
 
 const command = async (filePath: string) => {
   const hash = await hashObject(filePath, true);
-  const indexFile = resolve(await KitRoot.find(filePath), '.kit/index');
+  const indexFile = resolve(await KitRoot.find(), '.kit/index');
   const index = await readFile(indexFile, 'utf8');
   const indexMap: Record<string, string> = Object.fromEntries(
     index

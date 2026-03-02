@@ -2,6 +2,7 @@ import process from 'node:process';
 import { join } from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { ArgumentParser } from './helpers/arguments.js';
+import { KitIgnore } from './helpers/kitignore.js';
 
 const argv = process.argv.slice(2);
 const command = argv.shift();
@@ -14,6 +15,8 @@ try {
     console.error(`Invalid command: ${command}`);
     process.exit(1);
   }
+
+  await KitIgnore.init();
 
   const module = await import(`./commands/${commandFile}`);
 

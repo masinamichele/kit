@@ -1,4 +1,4 @@
-export type Arguments = Record<string, any>;
+export type Arguments = { _: any[] } & Record<string, any>;
 
 const shortArgumentsMap: Record<string, string> = { w: 'write', m: 'message', p: 'parent' };
 
@@ -6,7 +6,19 @@ export class ArgumentParser {
   private constructor() {}
 
   static parse(argv: string[]) {
-    const args: Arguments = {};
+    const args: Arguments = new Proxy(
+      { _: [] },
+      {
+        get(target, p: string) {
+          const positionalRegex = /^\$(\d+)/;
+          if (positionalRegex.test(p)) {
+            const [, pos] = positionalRegex.exec(p);
+            return target._.at(+pos - 1);
+          }
+          return (target as any)[p];
+        },
+      },
+    );
     let positionalCount = 1;
     for (let i = 0; i < argv.length; i++) {
       const arg = argv[i];
@@ -19,10 +31,10 @@ export class ArgumentParser {
         const next = argv[i + 1];
         if (next && !next.startsWith('-')) {
           args[key] = next;
+          i++;
         } else args[key] = true;
-        i++;
       } else {
-        args[`$${positionalCount++}`] = arg;
+        args._.push(arg);
       }
     }
     return args;

@@ -20,4 +20,8 @@ export namespace KitRoot {
   export const relative = async (path: string) => {
     return posix.join(...pathRelative(await find(path), path).split(sep));
   };
+
+  export const relativeSync = (root: string, path: string) => {
+    return posix.join(...pathRelative(root, path).split(sep));
+  };
 }
