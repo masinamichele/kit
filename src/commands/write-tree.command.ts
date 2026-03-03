@@ -1,58 +1,11 @@
 import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
-import { sep } from 'node:path/posix';
-import { Buffer } from 'node:buffer';
-import { Readable } from 'node:stream';
-import { KitObject } from '../helpers/kitobject.js';
 import { KitRoot } from '../helpers/kitroot.js';
 import { Arguments } from '../helpers/arguments.js';
-
-type Tree = { [key: string]: Tree | string };
+import { Tree } from '../helpers/tree.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
   return [];
-};
-
-const buildTree = (content: [string, string][]) => {
-  const tree: Tree = {};
-
-  for (const [path, hash] of content) {
-    let currentLevel = tree;
-    const segments = path.split(sep);
-    segments.forEach((segment, index) => {
-      if (index === segments.length - 1) {
-        currentLevel[segment] = hash;
-      } else {
-        if (!currentLevel[segment]) {
-          currentLevel[segment] = {};
-        }
-        currentLevel = currentLevel[segment] as Tree;
-      }
-    });
-  }
-
-  return tree;
-};
-
-const writeTree = async (tree: Tree) => {
-  const childPromises = Object.entries(tree).map(async ([name, value]) => {
-    if (typeof value === 'string') {
-      return { mode: '100644', hash: value, name };
-    }
-    const subtreeHash = await writeTree(value);
-    return { mode: '040000', hash: subtreeHash, name };
-  });
-  const children = await Promise.all(childPromises);
-  children.sort((a, b) => a.name.localeCompare(b.name));
-  const treeContent = Buffer.concat(
-    children.map((child) => {
-      const entryHeader = Buffer.from(`${child.mode} ${child.name}\0`);
-      const binaryHash = Buffer.from(child.hash, 'hex');
-      return Buffer.concat([entryHeader, binaryHash]);
-    }),
-  );
-
-  return KitObject.write(Readable.from(treeContent), 'tree');
 };
 
 const command = async () => {
@@ -63,8 +16,8 @@ const command = async () => {
     .filter(Boolean)
     .map((row) => row.split('\0').toReversed()) as [string, string][];
 
-  const tree = buildTree(content);
-  return writeTree(tree);
+  const tree = Tree.build(content);
+  return Tree.write(tree);
 };
 
 export default command;

@@ -22,7 +22,7 @@ const command = async (create?: string, del?: string) => {
 
   const currentBranch = await Refs.getCurrentBranch();
   const branches = await Refs.listBranches();
-  for (const branch of branches) {
+  for (const branch of new Set([currentBranch, ...branches])) {
     const isCurrent = branch === currentBranch;
     console.log(`${isCurrent ? '*' : ' '} ${branch}`);
   }

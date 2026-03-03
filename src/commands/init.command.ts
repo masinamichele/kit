@@ -5,7 +5,7 @@ import { Arguments } from '../helpers/arguments.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
   assert.ok(args.$1);
-  return [resolve(args[0])];
+  return [resolve(args.$1)];
 };
 
 const command = async (root: string) => {
@@ -20,8 +20,9 @@ const command = async (root: string) => {
     await mkdir(kitRoot);
     await Promise.all([
       mkdir(join(kitRoot, 'objects')),
-      mkdir(join(kitRoot, 'refs')),
+      mkdir(join(kitRoot, 'refs/heads'), { recursive: true }),
       writeFile(join(kitRoot, 'HEAD'), 'ref: refs/heads/main\n'),
+      writeFile(join(kitRoot, 'index'), ''),
     ]);
     console.log('Kit repository initialized successfully');
     return kitRoot;

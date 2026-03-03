@@ -8,7 +8,7 @@ export const validateArguments = (args: Arguments): Parameters<typeof command> =
 };
 
 const command = async (sha: string) => {
-  const decompressedData = await KitObject.read(sha);
+  const decompressedData = await KitObject.raw(sha);
   const nullByteIndex = decompressedData.indexOf('\0');
   return decompressedData.subarray(nullByteIndex + 1).toString();
 };

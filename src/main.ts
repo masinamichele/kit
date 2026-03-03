@@ -16,7 +16,7 @@ try {
     process.exit(1);
   }
 
-  await KitIgnore.init();
+  if (command !== 'init') await KitIgnore.init();
 
   const module = await import(`./commands/${commandFile}`);
 
