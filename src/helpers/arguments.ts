@@ -19,7 +19,6 @@ export class ArgumentParser {
         },
       },
     );
-    let positionalCount = 1;
     for (let i = 0; i < argv.length; i++) {
       const arg = argv[i];
       if (arg.startsWith('-')) {
