@@ -13,6 +13,7 @@
 - [x] **Index Management**: Create and manage the staging area.
   - [x] **`update-index`**: Add file contents to the index.
   - [x] **`ls-files`**: Show information about files in the index.
+  - [x] **`unstage`**: Remove file(s) from the staging area.
 
 ## Phase 3: Committing
 - [x] **Commit Graph**: Build the history of the repository.
@@ -25,8 +26,14 @@
   - [x] **`commit`**: Automate the process of creating trees and commits.
   - [x] **`log`**: Show the commit history.
     - [ ] Add branch and HEAD decorations.
+  - [x] **`status`**: Show the working tree status.
 
 ## Phase 5: Branching and Merging
-- [ ] **Branching**: Manage different lines of development.
-  - [ ] **`branch`**: List, create, or delete branches.
-  - [ ] **`checkout`**: Switch branches or restore working tree files.
+- [x] **Branching**: Manage different lines of development.
+  - [x] **`branch`**: List, create, or delete branches.
+  - [ ] **`checkout`**: Restore working tree files.
+  - [ ] **`restore`**: Discard changes in the working directory.
+
+## Phase 6: Refactoring & Cleanup
+- [ ] **Abstract Index I/O**: Move all read/write logic for the index file into a dedicated `Index` helper.
+- [ ] **General Codebase Cleanup**: Review all commands and helpers for consistency, clarity, and opportunities to reduce duplication.
