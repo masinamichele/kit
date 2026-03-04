@@ -5,30 +5,34 @@ import process from 'node:process';
 let root: string;
 
 export namespace KitRoot {
-  export const find = async (start = process.cwd()): Promise<string> => {
+  export const find = async (): Promise<string> => {
     if (root) return root;
 
-    const stats = await stat(start);
+    const findKitRoot = async (currentPath: string): Promise<string> => {
+      const stats = await stat(currentPath);
 
-    if (!stats.isDirectory()) start = dirname(start);
+      if (!stats.isDirectory()) currentPath = dirname(currentPath);
 
-    const dirs = await readdir(start, { withFileTypes: true });
+      const dirs = await readdir(currentPath, { withFileTypes: true });
 
-    if (dirs.some((dir) => dir.isDirectory() && dir.name === '.kit')) {
-      root = start;
-      return resolve(start);
-    }
+      if (dirs.some((dir) => dir.isDirectory() && dir.name === '.kit')) {
+        root = currentPath;
+        return resolve(currentPath);
+      }
 
-    const newStart = resolve(start, '..');
-    if (newStart === start) {
-      throw new Error('No .kit repository found');
-    }
+      const newStart = resolve(currentPath, '..');
+      if (newStart === currentPath) {
+        throw new Error('No .kit repository found');
+      }
 
-    return find(newStart);
+      return findKitRoot(newStart);
+    };
+
+    return findKitRoot(process.cwd());
   };
 
   export const relative = async (path: string) => {
-    return posix.join(...pathRelative(await find(path), path).split(sep));
+    return posix.join(...pathRelative(await find(), path).split(sep));
   };
 
   export const relativeSync = (root: string, path: string) => {
