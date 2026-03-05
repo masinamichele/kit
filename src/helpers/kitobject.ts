@@ -26,7 +26,7 @@ export namespace KitObject {
     return sha;
   };
 
-  export const raw = async (sha: string): Promise<Buffer> => {
+  export const raw = async (sha: string) => {
     const objectDir = resolve(await KitRoot.find(), '.kit/objects', sha.slice(0, 2));
     const objectPath = join(objectDir, sha.slice(2));
     const source = createReadStream(objectPath);
@@ -35,8 +35,14 @@ export namespace KitObject {
     return buffer(inflate);
   };
 
-  export const read = async (sha: string): Promise<string> => {
+  export const read = async (sha: string) => {
     const buffer = await raw(sha);
     return buffer.toString('utf8');
+  };
+
+  export const contents = async (sha: string) => {
+    const buffer = await raw(sha);
+    const firstNull = buffer.indexOf('\0');
+    return buffer.subarray(firstNull + 1).toString('utf8');
   };
 }

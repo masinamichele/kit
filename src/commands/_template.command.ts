@@ -8,7 +8,8 @@ export default createCommand({
   validate(args: Arguments) {
     return [];
   },
-  run() {
+
+  async run() {
     return 1;
   },
 });
