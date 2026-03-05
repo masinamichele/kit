@@ -1,19 +1,22 @@
+// noinspection JSUnusedGlobalSymbols
+
 import assert from 'node:assert/strict';
 import { Arguments } from '../helpers/arguments.js';
 import writeTree from './write-tree.command.js';
 import { Refs } from '../helpers/refs.js';
 import commitTree from './commit-tree.command.js';
+import { createCommand } from '../helpers/command.js';
 
-export const validateArguments = (args: Arguments): Parameters<typeof command> => {
-  assert.ok(args.message);
-  return [args.message];
-};
+export default createCommand({
+  validate(args: Arguments) {
+    assert.ok(args.message);
+    return [args.message];
+  },
 
-const command = async (message: string) => {
-  const treeSha = await writeTree();
-  const parentSha = await Refs.getHead();
-  const commitSha = await commitTree(treeSha, message, parentSha);
-  await Refs.setHead(commitSha);
-};
-
-export default command;
+  async run(message: string) {
+    const treeSha = await writeTree.run();
+    const parentSha = await Refs.getHead();
+    const commitSha = await commitTree.run(treeSha, message, parentSha);
+    await Refs.setHead(commitSha);
+  },
+});

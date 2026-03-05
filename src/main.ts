@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { ArgumentParser } from './helpers/arguments.js';
 import { KitIgnore } from './helpers/kitignore.js';
+import { Command } from './helpers/command.js';
 
 const argv = process.argv.slice(2);
 const command = argv.shift();
@@ -18,11 +19,11 @@ try {
 
   if (command !== 'init') await KitIgnore.init();
 
-  const module = await import(`./commands/${commandFile}`);
+  const module: Command<any> = (await import(`./commands/${commandFile}`)).default;
 
   const parsedArguments = ArgumentParser.parse(argv);
-  const args = module.validateArguments(parsedArguments);
-  const result = await module.default(...args);
+  const args = module.validate(parsedArguments);
+  const result = await module.run(...args);
 
   if (result) {
     if (Array.isArray(result)) {

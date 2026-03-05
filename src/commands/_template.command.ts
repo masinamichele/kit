@@ -1,12 +1,14 @@
+// noinspection JSUnusedGlobalSymbols
+
 import assert from 'node:assert/strict';
 import { Arguments } from '../helpers/arguments.js';
+import { createCommand } from '../helpers/command.js';
 
-export const validateArguments = (args: Arguments): Parameters<typeof command> => {
-  return [];
-};
-
-const command = async () => {
-  return 1;
-};
-
-export default command;
+export default createCommand({
+  validate(args: Arguments) {
+    return [];
+  },
+  run() {
+    return 1;
+  },
+});
