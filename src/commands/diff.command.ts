@@ -7,6 +7,7 @@ import { State } from '../helpers/state.js';
 import { Colors } from '../helpers/colors.js';
 import { KitObject } from '../helpers/kitobject.js';
 import { Diff } from '../helpers/diff.js';
+import revParse from './rev-parse.command.js';
 
 export default createCommand({
   validate(args: Arguments) {
@@ -16,6 +17,7 @@ export default createCommand({
   },
 
   async run(sha1: string, sha2: string) {
+    [sha1, sha2] = await Promise.all([revParse.run(sha1), revParse.run(sha2)]);
     const [stateA, stateB] = await Promise.all([State.commit(sha1), State.commit(sha2)]);
 
     const allPaths = new Set([...stateA.keys(), ...stateB.keys()]);

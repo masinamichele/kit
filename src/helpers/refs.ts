@@ -25,9 +25,15 @@ export namespace Refs {
       const ref = await getHeadRef();
       await mkdir(dirname(ref), { recursive: true });
       return await writeFile(ref, sha);
-    } catch (e) {
+    } catch {
       return null;
     }
+  };
+
+  export const getBranchRevision = async (name: string) => {
+    const kitRoot = await KitRoot.find();
+    const branchPath = join(kitRoot, '.kit/refs/heads', name);
+    return readFile(branchPath, 'utf8');
   };
 
   export const getCurrentBranch = async () => {

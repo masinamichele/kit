@@ -8,6 +8,7 @@ import { Timestamp } from '../helpers/timestamp.js';
 import { KitConfig } from '../helpers/kitconfig.js';
 import { KitObject } from '../helpers/kitobject.js';
 import { createCommand } from '../helpers/command.js';
+import revParse from './rev-parse.command.js';
 
 export default createCommand({
   validate(args: Arguments) {
@@ -17,6 +18,7 @@ export default createCommand({
   },
 
   async run(sha: string, message: string, parent?: string) {
+    sha = await revParse.run(sha);
     const timestamp = Timestamp.now();
     const timezone = Timestamp.getTimezoneOffset();
     const config = await KitConfig.read();
