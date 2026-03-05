@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { Arguments } from '../helpers/arguments.js';
-import { resolve, join } from 'node:path';
+import { resolve } from 'node:path';
 import { State } from '../helpers/state.js';
 import { KitRoot } from '../helpers/kitroot.js';
-import { writeFile } from 'node:fs/promises';
+import { Index } from '../helpers/index.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
   assert.ok(args.$1);
@@ -19,10 +19,7 @@ const command = async (paths: string[]) => {
     else indexState.delete(relative);
   }
 
-  const kitRoot = await KitRoot.find();
-  const indexFile = join(kitRoot, '.kit/index');
-  const newContent = [...indexState.entries()].map(([name, hash]) => `${hash}\0${name}`).join('\n');
-  await writeFile(indexFile, newContent);
+  await Index.write([...indexState.entries()]);
 };
 
 export default command;

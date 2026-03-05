@@ -6,12 +6,11 @@ import { KitRoot } from './kitroot.js';
 import { readFile } from 'node:fs/promises';
 import { WorkingTree } from './working-tree.js';
 import { createReadStream } from 'node:fs';
+import { Index } from './index.js';
 
 export namespace State {
-  type FileMap = Map<string, string>;
-
   export const head = async () => {
-    const headState: FileMap = new Map();
+    const headState = new Map<string, string>();
     const headSha = await Refs.getHead();
     if (!headSha) return headState;
     const commitContents = await KitObject.read(headSha);
@@ -35,22 +34,11 @@ export namespace State {
   };
 
   export const index = async () => {
-    const indexState: FileMap = new Map();
-    const kitRoot = await KitRoot.find();
-    const indexFile = join(kitRoot, '.kit/index');
-    const index = await readFile(indexFile, 'utf8');
-    const entries = index
-      .split('\n')
-      .filter(Boolean)
-      .map((row) => row.split('\0'));
-    for (const [hash, path] of entries) {
-      indexState.set(path, hash);
-    }
-    return indexState;
+    return Index.read();
   };
 
   export const workingDirectory = async () => {
-    const workingState: FileMap = new Map();
+    const workingState = new Map<string, string>();
     const kitRoot = await KitRoot.find();
     const trackableFiles = await WorkingTree.findTrackableFiles(kitRoot);
     const hashPromises = trackableFiles.map(async (file) => {

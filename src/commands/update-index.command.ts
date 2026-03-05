@@ -1,9 +1,10 @@
 import hashObject from './hash-object.command.js';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import assert from 'node:assert/strict';
 import { Arguments } from '../helpers/arguments.js';
 import { KitRoot } from '../helpers/kitroot.js';
+import { Index } from '../helpers/index.js';
 
 export const validateArguments = (args: Arguments): Parameters<typeof command> => {
   assert.ok(args.$1);
@@ -12,20 +13,10 @@ export const validateArguments = (args: Arguments): Parameters<typeof command> =
 
 const command = async (filePath: string) => {
   const hash = await hashObject(filePath, true);
-  const indexFile = resolve(await KitRoot.find(), '.kit/index');
-  const index = await readFile(indexFile, 'utf8');
-  const indexMap: Record<string, string> = Object.fromEntries(
-    index
-      .split('\n')
-      .filter(Boolean)
-      .map((row) => row.split('\0').toReversed()),
-  );
+  const index = await Index.read();
   const relative = await KitRoot.relative(filePath);
-  indexMap[relative] = hash;
-  const newContent = Object.entries(indexMap)
-    .map(([name, hash]) => `${hash}\0${name}`)
-    .join('\n');
-  await writeFile(indexFile, newContent);
+  index.set(relative, hash);
+  await Index.write([...index.entries()]);
 };
 
 export default command;
