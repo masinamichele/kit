@@ -1,45 +1,31 @@
 # TODO
 
-## Phase 1: The Foundations
+## Core Functionality
 - [x] **`init`**: Initialize a new Kit repository.
-- [x] **Object Store**: Implement Git's core content-addressable storage.
-  - [x] **`hash-object`**: Calculate an object ID and optionally create a blob from a file.
-  - [x] **`cat-file`**: Inspect the content of a repository object by its ID.
-    - [ ] Add pretty-printing (`-p`) for different object types (e.g., trees).
-- [x] **`write-tree`**: Create a tree object from the current index.
-- [x] **`commit-tree`**: Create a new commit object.
+- [x] **Object Model**: `hash-object`, `cat-file`, `write-tree`, `commit-tree`.
+- [x] **Index / Staging Area**: `update-index`, `ls-files`, `add`, `unstage`.
+- [x] **Commit History**: `commit`, `log`, `status`.
+- [x] **Branching**: `branch`.
+- [x] **Diffing**: `diff`.
 
-## Phase 2: The Staging Area (Index)
-- [x] **Index Management**: Create and manage the staging area.
-  - [x] **`update-index`**: Add file contents to the index.
-  - [x] **`ls-files`**: Show information about files in the index.
-  - [x] **`unstage`**: Remove file(s) from the staging area.
+## Future Features & Enhancements
 
-## Phase 3: Committing
-- [x] **Commit Graph**: Build the history of the repository.
-  - [x] **`write-tree`**: Create a tree object from the current index.
-  - [x] **`commit-tree`**: Create a new commit object.
+### Revision Parsing & Inspection
+- [ ] **`rev-parse`**: Implement a robust revision parser (short SHAs, `HEAD^`, `HEAD~n`).
+- [ ] **`show`**: Create a command to show detailed object information, including commit diffs.
 
-## Phase 4: Porcelain Commands
-- [x] **User-Friendly Workflow**: Create higher-level commands that mimic the common Git workflow.
-  - [x] **`add`**: A user-friendly interface for `update-index`.
-  - [x] **`commit`**: Automate the process of creating trees and commits.
-  - [x] **`log`**: Show the commit history.
-    - [ ] Add branch and HEAD decorations.
-  - [x] **`status`**: Show the working tree status.
-  - [x] **`diff`**: Show changes between commits.
+### Repository History & Safety
+- [ ] **`reflog`**: Implement the reflog mechanism for tracking `HEAD` movements.
+- [ ] **`stash`**: Implement temporary storage for work in progress.
 
-## Phase 5: Branching and Merging
-- [x] **Branching**: Manage different lines of development.
-  - [x] **`branch`**: List, create, or delete branches.
-  - [ ] **`checkout`**: Restore working tree files.
-  - [ ] **`restore`**: Discard changes in the working directory.
+### Usability & Output
+- [ ] **`log` Decorations**: Add branch and `HEAD` pointers to the log output.
+- [ ] **`cat-file -p`**: Add pretty-printing for tree objects.
 
-## Phase 6: Refactoring & Cleanup
-This phase focuses on improving the existing codebase for consistency, clarity, and maintainability before adding new features.
+### Working Directory Management
+- [ ] **`checkout`**: Restore working tree files from a specific commit.
+- [ ] **`restore`**: Discard changes in the working directory by restoring from the index.
 
-### 1. Centralize Index Management
-- [x] **Abstract Index I/O**: Move all read/write logic for the index file into a dedicated `Index` helper.
-- [x] **Consolidate Command Logic & Helpers**: Ensure commands are lean orchestrators and helpers have clear, single responsibilities.
-- [ ] **Standardize Error Handling and Output**: Review all commands for consistent error messages and output handling.
-- [ ] **Final Polish**: Address minor inconsistencies and opportunities for improvement.
+### Code Quality
+- [x] **Major Refactoring**: Centralized Index I/O and command logic.
+- [ ] **Ongoing Cleanup**: Continue to standardize error handling and improve consistency.

@@ -2,7 +2,7 @@
 
 `kit` is an educational, from-scratch implementation of the core concepts of the Git version control system, written in TypeScript and running on Node.js.
 
-The primary goal of this project is not to replace Git, but to serve as a learning tool to demystify its inner workings. By building the fundamental "plumbing" commands, we gain a deeper understanding of how Git manages content, history, and state.
+The primary goal of this project is not to replace Git, but to serve as a learning tool to demystify its inner workings. By building the fundamental "plumbing" and "porcelain" commands, we gain a deeper understanding of how Git manages content, history, and state.
 
 **This project is for educational purposes only and is not suitable for any production environment.**
 
@@ -11,7 +11,36 @@ The primary goal of this project is not to replace Git, but to serve as a learni
 *   **Core Git Concepts**: Implements foundational Git objects (blobs, trees, commits) and mechanisms like the index (staging area).
 *   **Performance-Oriented**: Built with an eye for performance, leveraging Node.js streams to efficiently handle files of any size without consuming excessive memory.
 *   **Modern & Dependency-Free**: Uses modern TypeScript and ES Modules syntax. It has zero external dependencies, relying solely on the Node.js core API.
-*   **Clean Architecture**: Features a dynamic command dispatcher that makes the system easily extensible, with a clear separation of concerns between low-level plumbing and user-facing commands.
+*   **Clean Architecture**: Features a dynamic command dispatcher and a clear separation of concerns between low-level helpers and user-facing commands.
+*   **Advanced Features**: Includes a from-scratch `diff` engine using the Longest Common Subsequence (LCS) algorithm and a powerful revision parser.
+
+## Implemented Commands
+
+`kit` now supports a wide range of essential Git commands:
+
+### Repository Setup
+*   `init`: Initialize a new, empty repository.
+
+### Staging & Unstaging
+*   `add <file...>`: Add file contents to the index.
+*   `unstage <file...>`: Remove a file from the index (the equivalent of `git restore --staged`).
+
+### Committing
+*   `commit -m <message>`: Record changes to the repository.
+
+### Inspection & History
+*   `status`: Show the working tree status.
+*   `log`: Show the commit history.
+*   `diff <commit1> <commit2>`: Show changes between two commits, including line-by-line content diffs.
+*   `rev-parse`: A powerful utility for resolving revisions. Supports ancestry operators like `HEAD^`, `HEAD^^`, and `HEAD~n`.
+
+### Branching
+*   `branch`: List all branches.
+*   `branch <name>`: Create a new branch or switch to an existing one.
+*   `branch -d <name>`: Delete a branch.
+
+### Low-Level Plumbing
+The project also includes several core plumbing commands like `hash-object`, `cat-file`, `write-tree`, and `commit-tree` that form the foundation of the system.
 
 ## License
 
