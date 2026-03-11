@@ -1,46 +1,71 @@
 # kit
 
-`kit` is an educational, from-scratch implementation of the core concepts of the Git version control system, written in TypeScript and running on Node.js.
+`kit` is an educational version control system written from scratch in TypeScript on Node.js to study how Git works internally.
 
-The primary goal of this project is not to replace Git, but to serve as a learning tool to demystify its inner workings. By building the fundamental "plumbing" and "porcelain" commands, we gain a deeper understanding of how Git manages content, history, and state.
+The goal is not to clone Git feature-for-feature, but to get as close as reasonably possible to Git's core behavior while keeping the implementation understandable. When Git combines too many concerns in one command, `kit` may deliberately split responsibilities into simpler commands if that makes the model easier to learn.
 
-**This project is for educational purposes only and is not suitable for any production environment.**
+This project is for educational use. The code should be treated as the source of truth.
 
-## Highlights
+**Not for production use.** This repository is an educational implementation and is intentionally not hardened for production environments.
 
-*   **Core Git Concepts**: Implements foundational Git objects (blobs, trees, commits) and mechanisms like the index (staging area).
-*   **Performance-Oriented**: Built with an eye for performance, leveraging Node.js streams to efficiently handle files of any size without consuming excessive memory.
-*   **Modern & Dependency-Free**: Uses modern TypeScript and ES Modules syntax. It has zero external dependencies, relying solely on the Node.js core API.
-*   **Clean Architecture**: Features a dynamic command dispatcher and a clear separation of concerns between low-level helpers and user-facing commands.
-*   **Advanced Features**: Includes a from-scratch `diff` engine using the Longest Common Subsequence (LCS) algorithm and a powerful revision parser.
+## Design Goals
 
-## Implemented Commands
+- Stay close to Git's object model and repository state transitions.
+- Prefer small, readable implementations over opaque abstractions.
+- Keep the distinction between plumbing and porcelain visible.
+- Allow intentional simplifications when they make the internals easier to understand.
 
-`kit` now supports a wide range of essential Git commands:
+## Current Command Surface
 
 ### Repository Setup
-*   `init`: Initialize a new, empty repository.
+- `init <path>`: initialize a new repository.
 
-### Staging & Unstaging
-*   `add <file...>`: Add file contents to the index.
-*   `unstage <file...>`: Remove a file from the index (the equivalent of `git restore --staged`).
+### Object Database
+- `hash-object <file> [-w]`: hash a file as a blob and optionally store it.
+- `cat-file <revision>`: print the raw contents of an object.
+- `write-tree`: write the current index as a tree object.
+- `commit-tree <tree> -m <message> [-p <parent>]`: create a commit object from a tree.
 
-### Committing
-*   `commit -m <message>`: Record changes to the repository.
+### Index and Working Tree
+- `update-index <file>`: write a file to the object store and stage it in the index.
+- `ls-files`: list the current index entries.
+- `add <file...>`: stage one or more files.
+- `unstage <file...>`: remove staged changes for one or more files by restoring the `HEAD` version in the index.
+- `status`: compare `HEAD`, the index, and the working tree.
 
-### Inspection & History
-*   `status`: Show the working tree status.
-*   `log`: Show the commit history.
-*   `diff <commit1> <commit2>`: Show changes between two commits, including line-by-line content diffs.
-*   `rev-parse`: A powerful utility for resolving revisions. Supports ancestry operators like `HEAD^`, `HEAD^^`, and `HEAD~n`.
+### History and Inspection
+- `commit -m <message>`: create a commit from the current index and move the current branch forward.
+- `log`: print commit history by following parents.
+- `rev-parse <revision>`: resolve `HEAD`, branch names, short SHAs, `^`, and `~n`.
+- `diff <commit1> <commit2>`: compare the trees of two commits and print file-level and line-level changes.
 
 ### Branching
-*   `branch`: List all branches.
-*   `branch <name>`: Create a new branch or switch to an existing one.
-*   `branch -d <name>`: Delete a branch.
+- `branch`: list branches.
+- `branch <name>`: create a branch if it does not exist, otherwise switch `HEAD` to it.
+- `branch -d <name>`: delete a branch.
 
-### Low-Level Plumbing
-The project also includes several core plumbing commands like `hash-object`, `cat-file`, `write-tree`, and `commit-tree` that form the foundation of the system.
+## Architecture
+
+- `src/main.ts`: CLI entry point and dynamic command loader.
+- `src/commands`: command implementations.
+- `src/helpers`: object storage, refs, index, working tree, revision parsing support, and shared logic.
+- `dist/`: generated build output and disposable.
+
+## Current Limits
+
+- Behavior is intentionally narrower than Git in some areas.
+- `branch <name>` currently combines branch creation and switching.
+- `status` and `diff` still need correctness work in edge cases.
+- The automated E2E suite is CLI-driven and currently split across porcelain, plumbing, errors, and journey flows.
+
+## Development
+
+- Build: `npm run build`
+- Test: `npm test`
+- Test command output artifact: `tests/.artifacts/command-output.log`
+- Start: `npm start`
+- Watch build: `npm run build:watch`
+- Watch run: `npm run start:watch`
 
 ## License
 
@@ -48,7 +73,7 @@ MIT License - Free for educational use.
 
 ## Disclaimer
 
-This `README.md` file was generated by an AI assistant to provide a comprehensive overview of the project. While it aims to be accurate, the underlying source code was written by a human developer and stands as the ground truth.
+This `README.md` file and the automated test suite were generated by an AI assistant to provide a comprehensive overview and verification baseline for the project. While they aim to be accurate, the underlying source code was written by a human developer and stands as the ground truth.
 
 ## Acknowledgments
 

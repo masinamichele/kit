@@ -18,6 +18,7 @@ export class KitIgnore {
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter((line) => !!line && !line.startsWith('#'));
+    } catch {
     } finally {
       this.initialized = true;
     }

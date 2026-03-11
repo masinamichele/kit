@@ -2,14 +2,14 @@
   "name": "kit",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
+    "test": "node tests/helpers/reset-command-log.mjs && node --test --test-concurrency=1 --experimental-test-coverage",
     "prestart": "npm run build",
-    "start": "node dist/index.js",
+    "start": "node dist/main.js",
     "build:watch": "tsc -w",
-    "start:watch": "nodemon dist/index.js"
+    "start:watch": "nodemon dist/main.js"
   },
   "keywords": [],
   "author": "",

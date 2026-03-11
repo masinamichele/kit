@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { KitRoot } from '../helpers/kitroot.js';
 import { readdir } from 'node:fs/promises';
 import { KitObject } from '../helpers/kitobject.js';
+import { isDirectInvocation } from '../helpers/context.js';
 
 const resolveBaseRevision = async (revision: string) => {
   if (revision === 'HEAD') return Refs.getHead();
@@ -57,6 +58,10 @@ export default createCommand({
         throw new Error(`Cannot find parent for commit ${currentSha} (reached root)`);
       }
       currentSha = parentMatch[1];
+    }
+
+    if (isDirectInvocation(import.meta.filename)) {
+      console.log(currentSha);
     }
 
     return currentSha;

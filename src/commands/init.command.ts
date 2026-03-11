@@ -29,7 +29,6 @@ export default createCommand({
         writeFile(join(kitRoot, 'index'), ''),
       ]);
       console.log('Kit repository initialized successfully');
-      return kitRoot;
     }
   },
 });

@@ -9,6 +9,7 @@ import { KitConfig } from '../helpers/kitconfig.js';
 import { KitObject } from '../helpers/kitobject.js';
 import { createCommand } from '../helpers/command.js';
 import revParse from './rev-parse.command.js';
+import { isDirectInvocation } from '../helpers/context.js';
 
 export default createCommand({
   validate(args: Arguments) {
@@ -27,6 +28,10 @@ export default createCommand({
     content += `\nauthor ${config.user.name} <${config.user.email}> ${timestamp} ${timezone}`;
     content += `\ncommitter ${config.user.name} <${config.user.email}> ${timestamp} ${timezone}`;
     content += `\n\n${message}`;
-    return KitObject.write(Readable.from(Buffer.from(content)), 'commit');
+    const commitSha = await KitObject.write(Readable.from(Buffer.from(content)), 'commit');
+    if (isDirectInvocation(import.meta.filename)) {
+      console.log(commitSha);
+    }
+    return commitSha;
   },
 });
