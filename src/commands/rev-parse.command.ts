@@ -16,11 +16,21 @@ const resolveBaseRevision = async (revision: string) => {
   if (branches.includes(revision)) {
     return Refs.getBranchRevision(revision);
   }
+  revision = revision.toLowerCase();
   if (revision.length < 3) throw new Error(`Invalid short SHA: ${revision}`);
+  if (!/^[0-9a-f]+$/.test(revision)) {
+    throw new Error(`Invalid revision: ${revision}`);
+  }
   const [, head, rest] = /^(..)(.+)$/.exec(revision);
   const root = await KitRoot.find();
   const headPath = join(root, '.kit/objects', head);
-  const allObjects = await readdir(headPath);
+  const allObjects = await (async (): Promise<string[]> => {
+    try {
+      return await readdir(headPath);
+    } catch {
+      return [];
+    }
+  })();
   const objects = allObjects.filter((obj) => obj.startsWith(rest));
   if (!objects.length) throw new Error(`No object found with prefix ${revision}`);
   if (objects.length > 1) throw new Error(`Ambiguous short SHA: ${revision} matches multiple objects`);
@@ -42,7 +52,11 @@ export default createCommand({
 
     let steps = 0;
     if (suffix.startsWith('~')) {
-      steps = +suffix.slice(1);
+      if (!/^~\d+$/.test(suffix)) {
+        throw new Error(`Invalid ancestor suffix: ${suffix}`);
+      }
+      const stepsBack = Number.parseInt(suffix.split('~')[1]);
+      steps = +stepsBack;
       if (Number.isNaN(steps)) throw new Error(`Invalid revision suffix: ${suffix}`);
     } else {
       steps = suffix.match(/\^/g)?.length ?? 0;
@@ -58,6 +72,10 @@ export default createCommand({
         throw new Error(`Cannot find parent for commit ${currentSha} (reached root)`);
       }
       currentSha = parentMatch[1];
+    }
+
+    if (!currentSha) {
+      throw new Error(`Cannot resolve revision ${revision}`);
     }
 
     if (isDirectInvocation(import.meta.filename)) {

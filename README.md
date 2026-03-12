@@ -41,7 +41,8 @@ This project is for educational use. The code should be treated as the source of
 
 ### Branching
 - `branch`: list branches.
-- `branch <name>`: create a branch if it does not exist, otherwise switch `HEAD` to it.
+- `branch <name>`: switch to an existing branch.
+- `branch -c <name>`: create a branch and switch to it.
 - `branch -d <name>`: delete a branch.
 
 ## Architecture
@@ -54,8 +55,8 @@ This project is for educational use. The code should be treated as the source of
 ## Current Limits
 
 - Behavior is intentionally narrower than Git in some areas.
-- `branch <name>` currently combines branch creation and switching.
-- `status` and `diff` still need correctness work in edge cases.
+- Some internal helpers still assume well-formed repository metadata written by `kit` itself.
+- `KitIgnore` matching is intentionally simpler than Git's full ignore semantics.
 - The automated E2E suite is CLI-driven and currently split across porcelain, plumbing, errors, and journey flows.
 
 ## Development

@@ -1,6 +1,6 @@
 export type Arguments = { _: any[] } & Record<string, any>;
 
-const shortArgumentsMap: Record<string, string> = { w: 'write', m: 'message', p: 'parent', d: 'delete' };
+const shortArgumentsMap: Record<string, string> = { w: 'write', m: 'message', p: 'parent', d: 'delete', c: 'create' };
 
 export class ArgumentParser {
   private constructor() {}

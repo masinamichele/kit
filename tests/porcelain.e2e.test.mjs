@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { rm } from 'node:fs/promises';
 import { createTempRepo, initializeRepo, parseIndex, readRepoFile, removeTempRepo, writeRepoFile } from './helpers/repo.mjs';
 import { clearActiveTest, runKit, setActiveTest } from './helpers/cli.mjs';
 import { SHA_REGEX, stripAnsi } from './helpers/assertions.mjs';
@@ -55,10 +56,12 @@ testCase('commit creates a commit and rev-parse resolves HEAD and ancestry', asy
     await writeRepoFile(repoPath, 'story.txt', 'v1\n');
     await runKit(['add', 'story.txt'], repoPath);
     const firstCommit = await runKit(['commit', '-m', 'first'], repoPath);
+    const firstCommitPlain = stripAnsi(firstCommit.stdout);
 
     await writeRepoFile(repoPath, 'story.txt', 'v2\n');
     await runKit(['add', 'story.txt'], repoPath);
     const secondCommit = await runKit(['commit', '-m', 'second'], repoPath);
+    const secondCommitPlain = stripAnsi(secondCommit.stdout);
 
     const headSha = (await runKit(['rev-parse', 'HEAD'], repoPath)).stdout.trim();
     const parentSha = (await runKit(['rev-parse', 'HEAD^'], repoPath)).stdout.trim();
@@ -67,6 +70,8 @@ testCase('commit creates a commit and rev-parse resolves HEAD and ancestry', asy
 
     assert.equal(firstCommit.code, 0);
     assert.equal(secondCommit.code, 0);
+    assert.match(firstCommitPlain, /^\[main [0-9a-f]{7}\] first\r?\n$/);
+    assert.match(secondCommitPlain, /^\[main [0-9a-f]{7}\] second\r?\n$/);
     assert.match(headSha, SHA_REGEX);
     assert.match(parentSha, SHA_REGEX);
     assert.equal(tildeSha, parentSha);
@@ -85,8 +90,7 @@ testCase('rev-parse resolves branch names to branch tips', async () => {
     await runKit(['add', 'tip.txt'], repoPath);
     await runKit(['commit', '-m', 'tip-commit'], repoPath);
 
-    await runKit(['branch', 'feature'], repoPath);
-    await runKit(['branch', 'feature'], repoPath);
+    await runKit(['branch', '-c', 'feature'], repoPath);
     await writeRepoFile(repoPath, 'tip.txt', 'tip-2\n');
     await runKit(['add', 'tip.txt'], repoPath);
     await runKit(['commit', '-m', 'feature-tip'], repoPath);
@@ -172,20 +176,63 @@ testCase('status reports untracked, staged, and unstaged changes', async () => {
   }
 });
 
-testCase('status reports staged deletion when index entry is removed', async () => {
+testCase('status reports a clean working tree after commit', async () => {
   const repoPath = await createTempRepo();
   try {
     await initializeRepo(repoPath);
-    await writeRepoFile(repoPath, 'deleted.txt', 'to-delete\n');
-    await runKit(['add', 'deleted.txt'], repoPath);
-    await runKit(['commit', '-m', 'base-delete'], repoPath);
+    await writeRepoFile(repoPath, 'clean.txt', 'clean\n');
+    await runKit(['add', 'clean.txt'], repoPath);
+    await runKit(['commit', '-m', 'clean-state'], repoPath);
 
-    await writeRepoFile(repoPath, '.kit/index', '');
+    const status = await runKit(['status'], repoPath);
+
+    assert.equal(status.code, 0);
+    assert.match(status.stdout, /On branch main/);
+    assert.doesNotMatch(status.stdout, /Changes to be committed:/);
+    assert.doesNotMatch(status.stdout, /Changes not staged for commit:/);
+    assert.doesNotMatch(status.stdout, /Untracked files:/);
+    assert.match(status.stdout, /Nothing to commit, working tree clean/);
+  } finally {
+    await removeTempRepo(repoPath);
+  }
+});
+
+testCase('status reports staged modification for a tracked file', async () => {
+  const repoPath = await createTempRepo();
+  try {
+    await initializeRepo(repoPath);
+    await writeRepoFile(repoPath, 'tracked.txt', 'v1\n');
+    await runKit(['add', 'tracked.txt'], repoPath);
+    await runKit(['commit', '-m', 'base-tracked'], repoPath);
+
+    await writeRepoFile(repoPath, 'tracked.txt', 'v2\n');
+    await runKit(['add', 'tracked.txt'], repoPath);
     const status = await runKit(['status'], repoPath);
 
     assert.equal(status.code, 0);
     assert.match(status.stdout, /Changes to be committed:/);
-    assert.match(status.stdout, /deleted:\s+deleted\.txt/);
+    assert.match(status.stdout, /modified:\s+tracked\.txt/);
+    assert.doesNotMatch(status.stdout, /Changes not staged for commit:/);
+  } finally {
+    await removeTempRepo(repoPath);
+  }
+});
+
+testCase('status reports unstaged deletion for a tracked file removed from working tree', async () => {
+  const repoPath = await createTempRepo();
+  try {
+    await initializeRepo(repoPath);
+    await writeRepoFile(repoPath, 'gone.txt', 'gone\n');
+    await runKit(['add', 'gone.txt'], repoPath);
+    await runKit(['commit', '-m', 'base-gone'], repoPath);
+
+    await runKit(['add', 'gone.txt'], repoPath);
+    await rm(`${repoPath}\\gone.txt`);
+    const status = await runKit(['status'], repoPath);
+
+    assert.equal(status.code, 0);
+    assert.match(status.stdout, /Changes not staged for commit:/);
+    assert.match(status.stdout, /deleted:\s+gone\.txt/);
   } finally {
     await removeTempRepo(repoPath);
   }
@@ -240,6 +287,10 @@ testCase('log prints commit history including messages', async () => {
 
     assert.equal(logResult.code, 0);
     assert.match(plain, /commit [0-9a-f]{40}/);
+    assert.match(plain, /Author: .+ <kit@example\.com>/);
+    assert.match(plain, /Date:\s+/);
+    assert.match(plain, /\n    second-log-message/);
+    assert.match(plain, /\n    first-log-message/);
     assert.match(plain, /first-log-message/);
     assert.match(plain, /second-log-message/);
   } finally {
@@ -255,8 +306,10 @@ testCase('branch can create, switch, list, and delete non-current branches', asy
     await runKit(['add', 'branch.txt'], repoPath);
     await runKit(['commit', '-m', 'branch-base'], repoPath);
 
-    const create = await runKit(['branch', 'feature'], repoPath);
+    const create = await runKit(['branch', '-c', 'feature'], repoPath);
     const headAfterCreate = await readRepoFile(repoPath, '.kit/HEAD');
+    const switchMain = await runKit(['branch', 'main'], repoPath);
+    const headAfterMainSwitch = await readRepoFile(repoPath, '.kit/HEAD');
     const switchBranch = await runKit(['branch', 'feature'], repoPath);
     const headAfterSwitch = await readRepoFile(repoPath, '.kit/HEAD');
     const list = await runKit(['branch'], repoPath);
@@ -264,13 +317,19 @@ testCase('branch can create, switch, list, and delete non-current branches', asy
     const listAfterDelete = await runKit(['branch'], repoPath);
 
     assert.equal(create.code, 0);
-    assert.equal(headAfterCreate, 'ref: refs/heads/main\n');
+    assert.match(create.stdout, /Switched to a new branch 'feature'/);
+    assert.equal(headAfterCreate, 'ref: refs/heads/feature\n');
+    assert.equal(switchMain.code, 0);
+    assert.match(switchMain.stdout, /Switched to branch 'main'/);
+    assert.equal(headAfterMainSwitch, 'ref: refs/heads/main\n');
     assert.equal(switchBranch.code, 0);
+    assert.match(switchBranch.stdout, /Switched to branch 'feature'/);
     assert.equal(headAfterSwitch, 'ref: refs/heads/feature\n');
     assert.equal(list.code, 0);
     assert.match(list.stdout, /\* feature/);
     assert.match(list.stdout, / main/);
     assert.equal(removeMain.code, 0);
+    assert.match(removeMain.stdout, /Deleted branch 'main'/);
     assert.equal(listAfterDelete.code, 0);
     assert.doesNotMatch(listAfterDelete.stdout, /\bmain\b/);
   } finally {

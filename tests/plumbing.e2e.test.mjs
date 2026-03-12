@@ -159,3 +159,26 @@ testCase('diff prints deleted file changes between commits', async () => {
     await removeTempRepo(repoPath);
   }
 });
+
+testCase('diff handles repeated lines with different counts', async () => {
+  const repoPath = await createTempRepo();
+  try {
+    await initializeRepo(repoPath);
+    await writeRepoFile(repoPath, 'repeated.txt', 'x\nx\n');
+    await runKit(['add', 'repeated.txt'], repoPath);
+    await runKit(['commit', '-m', 'repeat-a'], repoPath);
+    const first = (await runKit(['rev-parse', 'HEAD'], repoPath)).stdout.trim();
+
+    await writeRepoFile(repoPath, 'repeated.txt', 'x\n');
+    await runKit(['add', 'repeated.txt'], repoPath);
+    await runKit(['commit', '-m', 'repeat-b'], repoPath);
+    const second = (await runKit(['rev-parse', 'HEAD'], repoPath)).stdout.trim();
+
+    const diffResult = await runKit(['diff', first, second], repoPath);
+
+    assert.equal(diffResult.code, 0);
+    assert.match(diffResult.stdout, /-x/);
+  } finally {
+    await removeTempRepo(repoPath);
+  }
+});

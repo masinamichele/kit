@@ -24,8 +24,7 @@ testCase('porcelain journey: init -> add -> commit -> branch -> status -> diff -
     const base = (await runKit(['rev-parse', 'HEAD'], repoPath)).stdout.trim();
     assert.match(base, SHA_REGEX);
 
-    assert.equal((await runKit(['branch', 'feature'], repoPath)).code, 0);
-    assert.equal((await runKit(['branch', 'feature'], repoPath)).code, 0);
+    assert.equal((await runKit(['branch', '-c', 'feature'], repoPath)).code, 0);
     assert.equal(await readRepoFile(repoPath, '.kit/HEAD'), 'ref: refs/heads/feature\n');
 
     await writeRepoFile(repoPath, 'app.txt', 'v1\nv2\n');

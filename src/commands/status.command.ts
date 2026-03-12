@@ -41,10 +41,8 @@ export default createCommand({
       }
 
       if (indexHash !== workingHash) {
-        if (workingHash && !indexHash) {
-          // TODO: handle deletion from index
-        } else if (!workingHash && indexHash) unstagedChanges.push(`deleted:    ${path}`);
-        else if (workingHash && indexHash) unstagedChanges.push(`modified:   ${path}`);
+        if (!workingHash && indexHash) unstagedChanges.push(`deleted:    ${path}`);
+        else unstagedChanges.push(`modified:   ${path}`);
       }
     }
 
@@ -64,6 +62,10 @@ export default createCommand({
     if (untrackedFiles.length > 0) {
       console.log('\nUntracked files:');
       untrackedFiles.forEach((file) => console.log(`        ${Colors.FgRed}${file}${Colors.Reset}`));
+    }
+
+    if (!stagedChanges.length && !unstagedChanges.length && !untrackedFiles.length) {
+      console.log('\nNothing to commit, working tree clean');
     }
   },
 });

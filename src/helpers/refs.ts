@@ -54,8 +54,6 @@ export namespace Refs {
   };
 
   export const deleteBranch = async (name: string) => {
-    const currentBranch = await getCurrentBranch();
-    assert(name !== currentBranch);
     const kitRoot = await KitRoot.find();
     await rm(join(kitRoot, '.kit/refs/heads', name));
   };
